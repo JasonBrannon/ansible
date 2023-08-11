@@ -1,5 +1,5 @@
 ---
-- hosts: "{{ server }}"
+- hosts: "{{ hosts }}"
   tasks:
     # Apply updates and reboot if necessary
     # - name: Performing Windows updates...
@@ -8,7 +8,7 @@
 
     # - debug: var=update_result.stdout_lines
 
-    - name: Reboot the server
+    - name: Reboot the Windows host
       win_reboot:
-        msg: "Rebooting the server as it is required after updating..."
+        msg: "Rebooting the host as it is required after updating..."
       #when: update_result.reboot_required
