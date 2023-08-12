@@ -4,12 +4,15 @@
   gather_facts: true
   tasks:
 
-    - name: Ensure Windows Firewall is enabled
-      win_service:
-        name: MpsSvc
-        state: started
-        start_mode: auto
-      register: firewall_status
+    - name: Ensure Windows Firewall is started
+      win_shell: |
+        Start-Service MpsSvc
+      ignore_errors: yes
+    
+    - name: Ensure Windows Firewall is set to auto start
+      win_shell: |
+        Set-Service -Name MpsSvc -StartupType Automatic
+      ignore_errors: yes
 
     - name: Check if unnecessary network shares are active
       win_shell: net share
