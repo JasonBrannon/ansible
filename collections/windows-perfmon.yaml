@@ -1,6 +1,6 @@
 ---
 - name: Windows Performance Monitoring
-  hosts: windows
+  hosts: hosts
   gather_facts: no
   vars:
     cpu_threshold: 90
