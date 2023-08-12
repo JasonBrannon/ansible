@@ -1,0 +1,66 @@
+---
+- name: Top 10 Network Security Checks on Windows
+  hosts: hosts
+  gather_facts: true
+  tasks:
+
+    - name: Ensure Windows Firewall is enabled
+      win_service:
+        name: MpsSvc
+        state: started
+        start_mode: auto
+      register: firewall_status
+
+    - name: Check if unnecessary network shares are active
+      win_shell: net share
+      register: network_shares
+
+    - name: Ensure RDP is using secure layers
+      win_shell: |
+        Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication"
+      register: rdp_secure_layer
+
+    - name: Check for Open Ports
+      win_shell: Get-NetTCPConnection | Where-Object { $_.State -eq 'Listen' }
+      register: open_ports
+
+    - name: Check if NetBIOS is disabled
+      win_shell: Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where { $_.IPEnabled -eq $true } | Select-Object -Property FullDNSRegistrationEnabled
+      register: netbios_status
+
+    - name: Check AutoRun is disabled
+      win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name "NoDriveTypeAutoRun"
+      register: autorun_status
+
+    - name: Ensure Windows Update is enabled
+      win_service:
+        name: wuauserv
+        state: started
+        start_mode: auto
+      register: windows_update_status
+
+    - name: Ensure unnecessary protocols are disabled
+      win_shell: Get-WmiObject -Class Win32_NetworkProtocol | Where-Object { $_.Name -notin @('TCP', 'UDP') }
+      register: unnecessary_protocols
+
+    - name: Check if ICMP Redirect is disabled
+      win_shell: Get-NetIPInterface | Where-Object { $_.IcmpRedirect -eq 'Enabled' }
+      register: icmp_redirect_status
+
+    - name: Ensure SMBv1 is disabled
+      win_shell: Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'SMB1Protocol' }
+      register: smb_status
+
+    - name: Compile and display report
+      debug:
+        msg:
+          - "Firewall Status: {{ firewall_status }}"
+          - "Network Shares: {{ network_shares.stdout_lines }}"
+          - "RDP Security Layer: {{ rdp_secure_layer.stdout }}"
+          - "Open Ports: {{ open_ports.stdout_lines }}"
+          - "NetBIOS Status: {{ netbios_status.stdout }}"
+          - "AutoRun Status: {{ autorun_status.stdout }}"
+          - "Windows Update Status: {{ windows_update_status }}"
+          - "Unnecessary Protocols: {{ unnecessary_protocols.stdout_lines }}"
+          - "ICMP Redirect Status: {{ icmp_redirect_status.stdout_lines }}"
+          - "SMBv1 Status: {{ smb_status.stdout }}"
