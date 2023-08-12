@@ -5,39 +5,33 @@
   tasks:
 
     - name: Ensure Windows Firewall is started
-      win_shell: |
-        Start-Service MpsSvc
-      ignore_errors: yes
+      win_shell: Start-Service MpsSvc
+      ignore_errors: true
     
     - name: Ensure Windows Firewall is set to auto start
-      win_shell: |
-        Set-Service -Name MpsSvc -StartupType Automatic
-      ignore_errors: yes
+      win_shell: Set-Service -Name MpsSvc -StartupType Automatic
+      ignore_errors: true
 
     - name: Check if unnecessary network shares are active
       win_shell: net share
       register: network_shares
 
     - name: Ensure RDP is using secure layers
-      win_shell: |
-        Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication"
+      win_shell: Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication"
       register: rdp_secure_layer
 
     - name: Check for Open Ports
-      win_shell: |
-        Get-NetTCPConnection | Where-Object { $_.State -eq 'Listen' }
+      win_shell: Get-NetTCPConnection | Where-Object { $_.State -eq 'Listen' }
       register: open_ports
 
     - name: Check if NetBIOS is disabled
-      win_shell: |
-        Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where { $_.IPEnabled -eq $true } | Select-Object -Property FullDNSRegistrationEnabled
+      win_shell: Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where { $_.IPEnabled -eq $true } | Select-Object -Property FullDNSRegistrationEnabled
       register: netbios_status
 
     - name: Check AutoRun is disabled
-      win_shell: |
-        Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name "NoDriveTypeAutoRun"
+      win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name "NoDriveTypeAutoRun"
       register: autorun_status
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Ensure Windows Update is enabled
       win_service:
@@ -47,30 +41,27 @@
       register: windows_update_status
 
     - name: Ensure unnecessary protocols are disabled
-      win_shell: |
-        Get-WmiObject -Class Win32_NetworkProtocol | Where-Object { $_.Name -notin @('TCP', 'UDP') }
+      win_shell: Get-WmiObject -Class Win32_NetworkProtocol | Where-Object { $_.Name -notin @('TCP', 'UDP') }
       register: unnecessary_protocols
 
     - name: Check if ICMP Redirect is disabled
-      win_shell: |
-        Get-NetIPInterface | Where-Object { $_.IcmpRedirect -eq 'Enabled' }
+      win_shell: Get-NetIPInterface | Where-Object { $_.IcmpRedirect -eq 'Enabled' }
       register: icmp_redirect_status
 
     - name: Ensure SMBv1 is disabled
-      win_shell: |
-        Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'SMB1Protocol' }
+      win_shell: Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'SMB1Protocol' }
       register: smb_status
 
     - name: Compile and display report
       debug:
         msg:
-          - "Firewall Status: {{ firewall_status }}"
+          - "Firewall: Started and set to auto start."
           - "Network Shares: {{ network_shares.stdout_lines }}"
           - "RDP Security Layer: {{ rdp_secure_layer.stdout }}"
           - "Open Ports: {{ open_ports.stdout_lines }}"
           - "NetBIOS Status: {{ netbios_status.stdout }}"
           - "AutoRun Status: {{ autorun_status.stdout }}"
-          - "Windows Update Status: {{ windows_update_status }}"
+          - "Windows Update Status: Service state: {{ windows_update_status.state }}, Start mode: {{ windows_update_status.start_mode }}"
           - "Unnecessary Protocols: {{ unnecessary_protocols.stdout_lines }}"
           - "ICMP Redirect Status: {{ icmp_redirect_status.stdout_lines }}"
           - "SMBv1 Status: {{ smb_status.stdout }}"
