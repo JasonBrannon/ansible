@@ -1,0 +1,36 @@
+---
+- name: Windows Performance Monitoring
+  hosts: hosts
+  tasks:
+  
+    - name: Collect CPU Usage
+      win_shell: |
+        $cpuLoad = Get-WmiObject win32_processor | Measure-Object -property LoadPercentage -Average | Select Average
+        return $cpuLoad.Average
+      register: cpu_result
+
+    - name: Collect Memory Usage
+      win_shell: |
+        $freeMemory = Get-WmiObject -Class Win32_OperatingSystem | Select-Object @{Name="FreeMemory";Expression={$_.FreePhysicalMemory/1KB}}
+        return $freeMemory.FreeMemory
+      register: memory_result
+
+    - name: Collect Disk Usage
+      win_shell: |
+        $diskUsage = Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType=3" | Select-Object DeviceID, @{Name="UsedSpace";Expression={"{0:N2}" -f (($_.Size - $_.FreeSpace)/1GB)}}
+        return $diskUsage
+      register: disk_result
+
+    - name: Collect Network Usage
+      win_shell: |
+        $network = Get-WmiObject -Class Win32_PerfRawData_Tcpip_NetworkInterface
+        return $network
+      register: network_result
+
+    # Assuming we have thresholds set for alerts or reports
+    - name: Check for anomalies in CPU Usage
+      fail:
+        msg: "CPU usage is high: {{ cpu_result.stdout }}"
+      when: cpu_result.stdout | int > 90
+
+    # Add more tasks for other metrics as needed...
