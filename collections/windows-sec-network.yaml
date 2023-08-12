@@ -24,16 +24,20 @@
       register: rdp_secure_layer
 
     - name: Check for Open Ports
-      win_shell: Get-NetTCPConnection | Where-Object { $_.State -eq 'Listen' }
+      win_shell: |
+        Get-NetTCPConnection | Where-Object { $_.State -eq 'Listen' }
       register: open_ports
 
     - name: Check if NetBIOS is disabled
-      win_shell: Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where { $_.IPEnabled -eq $true } | Select-Object -Property FullDNSRegistrationEnabled
+      win_shell: |
+        Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where { $_.IPEnabled -eq $true } | Select-Object -Property FullDNSRegistrationEnabled
       register: netbios_status
 
     - name: Check AutoRun is disabled
-      win_shell: Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name "NoDriveTypeAutoRun"
+      win_shell: |
+        Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer' -Name "NoDriveTypeAutoRun"
       register: autorun_status
+      ignore_errors: yes
 
     - name: Ensure Windows Update is enabled
       win_service:
@@ -43,15 +47,18 @@
       register: windows_update_status
 
     - name: Ensure unnecessary protocols are disabled
-      win_shell: Get-WmiObject -Class Win32_NetworkProtocol | Where-Object { $_.Name -notin @('TCP', 'UDP') }
+      win_shell: |
+        Get-WmiObject -Class Win32_NetworkProtocol | Where-Object { $_.Name -notin @('TCP', 'UDP') }
       register: unnecessary_protocols
 
     - name: Check if ICMP Redirect is disabled
-      win_shell: Get-NetIPInterface | Where-Object { $_.IcmpRedirect -eq 'Enabled' }
+      win_shell: |
+        Get-NetIPInterface | Where-Object { $_.IcmpRedirect -eq 'Enabled' }
       register: icmp_redirect_status
 
     - name: Ensure SMBv1 is disabled
-      win_shell: Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'SMB1Protocol' }
+      win_shell: |
+        Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'SMB1Protocol' }
       register: smb_status
 
     - name: Compile and display report
