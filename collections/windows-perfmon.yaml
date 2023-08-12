@@ -1,6 +1,10 @@
 ---
 - name: Windows Performance Monitoring
-  hosts: hosts
+  hosts: windows
+  gather_facts: no
+  vars:
+    cpu_threshold: 90
+
   tasks:
   
     - name: Collect CPU Usage
@@ -27,10 +31,19 @@
         return $network
       register: network_result
 
-    # Assuming we have thresholds set for alerts or reports
-    - name: Check for anomalies in CPU Usage
+    - name: Analyze and Create Report
+      set_fact:
+        report:
+          cpu_usage: "{{ cpu_result.stdout | int }}"
+          memory_free: "{{ memory_result.stdout | int }}"
+          disk_usage: "{{ disk_result.stdout_lines }}"
+          network_usage: "{{ network_result.stdout_lines }}"
+      
+    - name: Display Report
+      debug:
+        var: report
+      
+    - name: Check for anomalies in CPU Usage and Alert
       fail:
-        msg: "CPU usage is high: {{ cpu_result.stdout }}"
-      when: cpu_result.stdout | int > 90
-
-    # Add more tasks for other metrics as needed...
+        msg: "ALERT! CPU usage is high: {{ cpu_result.stdout }}%"
+      when: cpu_result.stdout | int > cpu_threshold
