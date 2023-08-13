@@ -15,5 +15,5 @@
       local_action: 
         module: copy
         content: "{{ result.fail_msg if result.failed else 'All tests passed' }}"
-        #dest: SEE ansible.cfg
+        dest: /tmp/reports
       when: result is defined
