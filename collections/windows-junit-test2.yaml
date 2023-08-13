@@ -1,0 +1,38 @@
+---
+- name: Windows Service Test Playbook
+  hosts: hosts
+  gather_facts: no
+  tasks:
+    - name: Check if W32Time service is running
+      win_service_info:
+        name: W32Time
+      register: service_status
+
+    - name: Generate JUnit formatted output
+      win_shell: |
+        $status = '{{ service_status.status }}'
+        if ($status -eq 'running') {
+            $testStatus = 'pass'
+            $message = '<system-out>W32Time is running</system-out>'
+        } else {
+            $testStatus = 'fail'
+            $message = "<failure>W32Time is not running. It's in $status state.</failure>"
+        }
+
+        $xmlContent = @"
+        <?xml version="1.0" encoding="UTF-8"?>
+        <testsuite name="WindowsServiceCheck" tests="1">
+            <testcase classname="Windows" name="W32TimeServiceStatus">
+                $message
+            </testcase>
+        </testsuite>
+        "@
+
+        $xmlContent | Out-File -Encoding utf8 "C:\temp\service_test_result.xml"
+      when: service_status.exists
+
+    - name: Fetch JUnit results to the Ansible controller
+      fetch:
+        src: "C:\\temp\\service_test_result.xml"
+        dest: "/tmp/reports"
+        flat: yes
