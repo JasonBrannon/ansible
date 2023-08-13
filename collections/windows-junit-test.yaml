@@ -24,7 +24,7 @@
 
     - name: Ensure destination directory exists
       file:
-        path: /tmp/reports
+        path: /tmp/reports2
         state: directory
         mode: '0755'
       delegate_to: localhost
@@ -38,5 +38,5 @@
       local_action:
         module: copy
         content: "{{ sample_assertion_result.msg }}"
-        dest: "/tmp/reports/junit-test-{{ timestamp }}.txt"  # Changed to .txt to differentiate it from junit's .xml
+        dest: "/tmp/reports2/junit-test-{{ timestamp }}.txt"  # Changed to .txt to differentiate it from junit's .xml
       when: sample_assertion_result is defined
