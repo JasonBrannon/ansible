@@ -1,38 +1,40 @@
 ---
-- name: Windows Service Test Playbook
-  hosts: hosts
+- name: Check if TimeZone is Eastern Standard
+  hosts: windows
   gather_facts: no
   tasks:
-    - name: Check if W32Time service is running
-      win_service_info:
-        name: W32Time
-      register: service_status
+    - name: Get current time zone
+      win_timezone:
+        name: "USE_EXISTING"
+      register: timezone_status
 
-    - name: Generate JUnit formatted output
+    - name: Determine if the timezone is Eastern Standard Time
+      set_fact:
+        is_est: "{{ timezone_status.name == 'Eastern Standard Time' }}"
+  
+    - name: Generate JUnit formatted output for EST
       win_shell: |
-        $status = '{{ service_status.status }}'
-        if ($status -eq 'running') {
+        if ({{ is_est }}) {
             $testStatus = 'pass'
-            $message = '<system-out>W32Time is running</system-out>'
+            $message = '<system-out>Timezone is Eastern Standard Time</system-out>'
         } else {
             $testStatus = 'fail'
-            $message = "<failure>W32Time is not running. It's in $status state.</failure>"
+            $message = "<failure>Timezone is not Eastern Standard Time. It's set to {{ timezone_status.name }}</failure>"
         }
 
         $xmlContent = @"
         <?xml version="1.0" encoding="UTF-8"?>
-        <testsuite name="WindowsServiceCheck" tests="1">
-            <testcase classname="Windows" name="W32TimeServiceStatus">
+        <testsuite name="TimeZoneCheck" tests="1">
+            <testcase classname="Windows" name="IsEasternStandardTime">
                 $message
             </testcase>
         </testsuite>
         "@
 
-        $xmlContent | Out-File -Encoding utf8 "C:\temp\service_test_result.xml"
-      when: service_status.exists
+        $xmlContent | Out-File -Encoding utf8 "C:\temp\timezone_test_result.xml"
 
     - name: Fetch JUnit results to the Ansible controller
       fetch:
-        src: "C:\\temp\\service_test_result.xml"
+        src: "C:\\temp\\timezone_test_result.xml"
         dest: "/tmp/reports"
         flat: yes
