@@ -24,7 +24,7 @@
 
     - name: Ensure destination directory exists
       file:
-        path: /tmp/semaphore_reports
+        path: /tmp/reports
         state: directory
         mode: '0755'
       delegate_to: localhost
@@ -38,5 +38,5 @@
       local_action:
         module: copy
         content: "{{ sample_assertion_result.msg }}"
-        dest: "/tmp/semaphore_reports/junit-test-{{ timestamp }}.xml"
+        dest: "/tmp/reports/junit-test-{{ timestamp }}.xml"
       when: sample_assertion_result is defined
