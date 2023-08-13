@@ -37,6 +37,12 @@
         "@
 
         $xmlContent | Out-File -Encoding utf8 "C:\temp\timezone_test_result.xml"
+        return $xmlContent
+      register: junit_output
+
+    - name: Debug JUnit XML content
+      debug:
+        var: junit_output.stdout_lines
 
     - name: Fetch JUnit results to the Ansible controller
       fetch:
