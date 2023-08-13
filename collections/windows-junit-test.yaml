@@ -33,7 +33,7 @@
       local_action:
         module: copy
         content: "{{ result.fail_msg if result.failed else 'All tests passed' }}"
-        dest: "/tmp/semaphore_reports/junit-test-{{ timestamp }}.yml"
+        dest: "/tmp/semaphore_reports/junit-test-{{ timestamp }}.xml"
       when: result is defined
 
 
