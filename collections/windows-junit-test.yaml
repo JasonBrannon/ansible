@@ -1,0 +1,19 @@
+---
+- name: JUnit Report Test
+  hosts: hosts
+  gather_facts: false
+  tasks:
+    - name: Sample assertion
+      assert:
+        that:
+          - "'foo' in 'foobar'"
+        fail_msg: "Test failed: 'foo' is not in 'foobar'"
+        success_msg: "Test passed: 'foo' is in 'foobar'"
+      register: result
+
+    - name: Generate report
+      local_action: 
+        module: copy
+        content: "{{ result.fail_msg if result.failed else 'All tests passed' }}"
+        #dest: SEE ansible.cfg
+      when: result is defined
