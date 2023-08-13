@@ -1,7 +1,7 @@
 ---
 - name: JUnit Report Test
   hosts: hosts
-  gather_facts: true  # Gather facts to get ansible_date_time from remote hosts
+  gather_facts: true
 
   tasks:
     - name: Sample assertion
@@ -12,11 +12,22 @@
         success_msg: "Test passed: 'foo' is in 'foobar'"
       register: result
 
-    # Setting the timestamp variable on the control node
-    - set_fact:
-        timestamp: "{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+    # Get current date and time on control machine
+    - name: Get current date and time on control machine
+      command: date "+%Y-%m-%d-%H-%M-%S"
       delegate_to: localhost
+      register: current_date
       run_once: true
+
+    - set_fact:
+        timestamp: "{{ current_date.stdout }}"
+
+    - name: Ensure destination directory exists
+      file:
+        path: /tmp/semaphore_reports
+        state: directory
+        mode: '0755'
+      delegate_to: localhost
 
     - name: Generate report
       local_action:
@@ -24,4 +35,5 @@
         content: "{{ result.fail_msg if result.failed else 'All tests passed' }}"
         dest: "/tmp/semaphore_reports/junit-test-{{ timestamp }}.yml"
       when: result is defined
+
 
