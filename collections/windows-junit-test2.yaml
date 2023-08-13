@@ -3,6 +3,11 @@
   hosts: hosts
   gather_facts: no
   tasks:
+    - name: Ensure C:\temp directory exists on Windows host
+      win_file:
+        path: "C:\\temp"
+        state: directory
+  
     - name: Get current time zone
       win_timezone:
         name: "USE_EXISTING"
@@ -36,5 +41,13 @@
     - name: Fetch JUnit results to the Ansible controller
       fetch:
         src: "C:\\temp\\timezone_test_result.xml"
-        dest: "/tmp/reports"
+        dest: "/tmp/reports/timezone_test_result.xml"
         flat: yes
+  
+  # Run tasks on localhost to prepare the Ansible controller
+  post_tasks:
+    - name: Ensure /tmp/reports directory exists on Ansible controller
+      file:
+        path: "/tmp/reports"
+        state: directory
+      delegate_to: localhost
