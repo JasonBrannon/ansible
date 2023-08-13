@@ -1,7 +1,8 @@
 ---
 - name: JUnit Report Test
   hosts: hosts
-  gather_facts: true  # Ensure facts are gathered to get ansible_date_time
+  gather_facts: true  # Gather facts to get ansible_date_time from remote hosts
+
   tasks:
     - name: Sample assertion
       assert:
@@ -11,13 +12,16 @@
         success_msg: "Test passed: 'foo' is in 'foobar'"
       register: result
 
-    # Setting the timestamp variable
+    # Setting the timestamp variable on the control node
     - set_fact:
         timestamp: "{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      delegate_to: localhost
+      run_once: true
 
     - name: Generate report
-      local_action: 
+      local_action:
         module: copy
         content: "{{ result.fail_msg if result.failed else 'All tests passed' }}"
         dest: "/tmp/semaphore_reports/junit-test-{{ timestamp }}.yml"
       when: result is defined
+
