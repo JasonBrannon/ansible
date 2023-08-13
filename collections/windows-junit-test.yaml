@@ -10,7 +10,7 @@
           - "'foo' in 'foobar'"
         fail_msg: "Test failed: 'foo' is not in 'foobar'"
         success_msg: "Test passed: 'foo' is in 'foobar'"
-      register: result
+      register: sample_assertion_result
 
     # Get current date and time on control machine
     - name: Get current date and time on control machine
@@ -29,11 +29,14 @@
         mode: '0755'
       delegate_to: localhost
 
+    - name: Report Sample Assertion Result for JUnit
+      debug:
+        msg: "Sample assertion, Result: {{ sample_assertion_result.msg }}"
+      when: sample_assertion_result is defined
+
     - name: Generate report
       local_action:
         module: copy
-        content: "{{ result.fail_msg if result.failed else 'All tests passed' }}"
+        content: "{{ sample_assertion_result.msg }}"
         dest: "/tmp/semaphore_reports/junit-test-{{ timestamp }}.xml"
-      when: result is defined
-
-
+      when: sample_assertion_result is defined
