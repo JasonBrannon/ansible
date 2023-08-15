@@ -20,6 +20,8 @@
           - "timezone_result.stdout | trim == 'Eastern Standard Time'"
         fail_msg: "The timezone is not set to Eastern Standard Time. Found: {{ timezone_result.stdout | trim }}"
         success_msg: "The timezone is set to Eastern Standard Time."
+      ignore_errors: true
+      register: assert_result
 
     - name: Save result as JUnit XML
       delegate_to: localhost

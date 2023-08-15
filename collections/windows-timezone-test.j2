@@ -2,8 +2,8 @@
 <testsuites>
     <testsuite name="Timezone Check" tests="1">
         <testcase name="Check Eastern Standard Time">
-        {% if 'failed' in timezone_result and timezone_result.failed %}
-            <failure type="error" message="{{ timezone_result.fail_msg }}">Timezone mismatch: expected 'Eastern Standard Time' but found '{{ timezone_result.stdout | trim }}'</failure>
+        {% if 'failed' in assert_result and assert_result.failed %}
+            <failure type="error" message="{{ assert_result.fail_msg }}">Timezone mismatch: expected 'Eastern Standard Time' but found '{{ timezone_result.stdout | trim }}'</failure>
         {% else %}
             <system-out type="pass">The timezone is correctly set to Eastern Standard Time.</system-out>
         {% endif %}
