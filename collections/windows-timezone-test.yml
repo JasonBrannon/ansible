@@ -1,0 +1,19 @@
+---
+- name: Check Timezone on Windows Host
+  hosts: hosts
+  tasks:
+    - name: Get the current time zone
+      win_shell: (Get-TimeZone).Id
+      register: timezone_result
+
+    - name: Assert timezone is Eastern Standard Time
+      assert:
+        that:
+          - "timezone_result.stdout | trim == 'Eastern Standard Time'"
+        fail_msg: "The timezone is not set to Eastern Standard Time. Found: {{ timezone_result.stdout | trim }}"
+        success_msg: "The timezone is set to Eastern Standard Time."
+
+    - name: Save result as JUnit XML
+      template:
+        src: windows-timezone-text.j2
+        dest: /tmp/reports/timezone_report.xml
