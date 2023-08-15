@@ -2,6 +2,14 @@
 - name: Check Timezone on Windows Host
   hosts: hosts
   tasks:
+    # Ensure the report directory exists
+    - name: Ensure reports directory exists
+      local_action: 
+        module: file
+        path: "./reports"
+        state: directory
+        mode: '0777'
+
     - name: Get the current time zone
       win_shell: (Get-TimeZone).Id
       register: timezone_result
@@ -14,6 +22,7 @@
         success_msg: "The timezone is set to Eastern Standard Time."
 
     - name: Save result as JUnit XML
+      delegate_to: localhost
       template:
         src: windows-timezone-text.j2
-        dest: /tmp/reports/timezone_report.xml
+        dest: "./reports/timezone_report.xml"
