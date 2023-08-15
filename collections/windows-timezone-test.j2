@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-    <testsuite name="Timezone Check" tests="1">
+    <testsuite name="Timezone Check for {{ inventory_hostname }} (IP: {{ ansible_host }})" tests="1">
+        <metadata>
+            <hostname>{{ target_hostname.stdout | trim }}</hostname>
+            <ip>{{ ansible_host }}</ip>
+        </metadata>
         <testcase name="Check Eastern Standard Time">
         {% if 'failed' in assert_result and assert_result.failed %}
             <failure type="error" message="{{ assert_result.msg }}">Timezone mismatch: expected 'Eastern Standard Time' but found '{{ timezone_result.stdout | trim }}'</failure>

@@ -4,7 +4,7 @@
   tasks:
     # Ensure the report directory exists
     - name: Ensure reports directory exists
-      local_action: 
+      local_action:
         module: file
         path: "/tmp/reports"
         state: directory
@@ -23,8 +23,19 @@
       ignore_errors: true
       register: assert_result
 
+    # Capture hostname and datetime
+    - name: Get local datetime
+      delegate_to: localhost
+      set_fact:
+        current_datetime: "{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}"
+
+    - name: Get target hostname
+      win_shell: hostname
+      register: target_hostname
+
+    # Save the result as a JUnit XML file with the updated name
     - name: Save result as JUnit XML
       delegate_to: localhost
       template:
         src: windows-timezone-test.j2
-        dest: "/tmp/reports/timezone_report.xml"
+        dest: "/tmp/reports/timezone_report_{{ target_hostname.stdout | trim }}_{{ current_datetime }}.xml"
