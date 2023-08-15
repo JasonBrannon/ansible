@@ -21,17 +21,6 @@
         fail_msg: "The timezone is not set to Eastern Standard Time. Found: {{ timezone_result.stdout | trim }}"
         success_msg: "The timezone is set to Eastern Standard Time."
 
-    - name: Display the template content
-      delegate_to: localhost
-      command:
-        cmd: cat windows-timezone-test.j2
-      register: report_output
-      changed_when: false
-      ignore_errors: true
-
-    - debug:
-        var: report_output.stdout_lines
-
     - name: Save result as JUnit XML
       delegate_to: localhost
       template:
