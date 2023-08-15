@@ -24,5 +24,5 @@
     - name: Save result as JUnit XML
       delegate_to: localhost
       template:
-        src: windows-timezone-text.j2
-        dest: "/home/tychon/reports/timezone_report.xml"
+        src: collections/windows-timezone-test.j2
+        dest: "/home/tychon/timezone_report.xml"
