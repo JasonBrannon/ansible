@@ -6,7 +6,7 @@
     - name: Ensure reports directory exists
       local_action: 
         module: file
-        path: "./reports"
+        path: "/tmp/reports"
         state: directory
         mode: '0777'
 
@@ -25,4 +25,4 @@
       delegate_to: localhost
       template:
         src: windows-timezone-text.j2
-        dest: "./reports/timezone_report.xml"
+        dest: "/tmp/reports/timezone_report.xml"
