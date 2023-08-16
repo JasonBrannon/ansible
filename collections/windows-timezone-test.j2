@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
     <testsuite name="Timezone Check for {{ inventory_hostname }} (IP: {{ ansible_host }})" tests="1">
-        <metadata>
-            <hostname>{{ target_hostname.stdout | trim }}</hostname>
-            <ip>{{ ansible_host }}</ip>
-        </metadata>
+        <properties>
+            <property name="hostname" value="{{ target_hostname.stdout | trim }}"/>
+            <property name="ip" value="{{ ansible_host }}"/>
+        </properties>
         <testcase name="Check Eastern Standard Time">
         {% if 'failed' in assert_result and assert_result.failed %}
             <failure type="error" message="{{ assert_result.msg }}">Timezone mismatch: expected 'Eastern Standard Time' but found '{{ timezone_result.stdout | trim }}'</failure>
         {% else %}
-            <system-out type="pass">The timezone is correctly set to Eastern Standard Time.</system-out>
+            <system-err type="pass">The timezone is correctly set to Eastern Standard Time.</system-err>
         {% endif %}
         </testcase>
     </testsuite>
